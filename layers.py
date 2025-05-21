@@ -541,7 +541,7 @@ class Detect(nn.Module):
             self.one2one_cv3 = copy.deepcopy(self.cv3)
 
     def forward(self, x):
-        """Concatenates and returns predicted bounding boxes and class probabilities."""
+        """Concatenates and returns predicted bounding boxes and class probabilities"""
         if self.end2end:
             return self.forward_end2end(x)
 
@@ -637,7 +637,7 @@ class Detect(nn.Module):
         return dist2bbox(bboxes, anchors, xywh=xywh and not (self.end2end or self.xyxy), dim=1)
 
     @staticmethod
-    def postprocess(preds: torch.Tensor, max_det: int, nc: int = 80):
+    def postprocess(preds: torch.Tensor, max_det: int=300, nc: int = 80):
         """
         Post-processes YOLO model predictions.
 
