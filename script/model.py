@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from layers import *
+from script.layers import *
 
 class DetectionModel(nn.Module):
     def __init__(self, depth=0.5, width=0.25, max_channels=1024, nc=80):

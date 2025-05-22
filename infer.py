@@ -8,8 +8,8 @@ from PIL import Image
 import torchvision.transforms as T
 
 # Replace this with your actual model
-from model import DetectionModel
-from utils import non_max_suppression
+from script.model import DetectionModel
+from script.utils import non_max_suppression
 import numpy as np
 
 # Configuration
@@ -27,7 +27,6 @@ transform = T.Compose([
 ])
 
 # Load model
-
 model = DetectionModel(nc = 80)
 
     # print(model)
@@ -74,7 +73,7 @@ for img_id in tqdm(img_ids):
         height = height * scale_y
         
         # Map class ID to category ID using classes_dict
-        from classes_dict import classes_dict
+        from script.classes_dict import classes_dict
         class_name = classes_dict[int(cls_id)]
         category_id = coco.getCatIds(catNms=[class_name])[0]
         
