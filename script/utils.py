@@ -1,17 +1,10 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import numpy as np
-import os
-import random
+
 import torch
 import torchvision
 import numpy 
+import torch.nn as nn
 
-from collections import Counter
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from time import time
-
+import math
 def smooth(y, f=0.1):
     # Box filter of fraction f
     nf = round(len(y) * f * 2) // 2 + 1  # number of filter elements (must be odd)
@@ -164,3 +157,70 @@ def compute_iou(box1, box2, eps=1e-7):
         alpha = v / (v - iou + (1 + eps))
     return iou - (rho2 / c2 + v * alpha)  # CIoU
 
+class YoloLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+        self.bce = nn.BCEWithLogitsLoss()
+        self.entropy = nn.CrossEntropyLoss(label_smoothing = 0.1)
+        self.sigmoid = nn.Sigmoid()
+
+        # Constants signifying how much to pay for each respective part of the loss
+        self.lambda_class = 1
+        self.lambda_noobj = 0.5
+        self.lambda_obj = 5
+        self.lambda_box = 5
+
+    def forward(self, predictions, target, anchors):
+        # Check where obj and noobj (we ignore if target == -1)
+        obj   = target[..., 0] == 1  # in paper this is Iobj_i
+        noobj = target[..., 0] == 0  # in paper this is Inoobj_i
+
+        # ======================= #
+        #   FOR NO OBJECT LOSS    #
+        # ======================= #
+
+        no_object_loss = self.bce(
+            (predictions[..., 0:1][noobj]), (target[..., 0:1][noobj]),
+        )
+
+        # ==================== #
+        #   FOR OBJECT LOSS    #
+        # ==================== #
+
+        anchors = torch.tensor(anchors).reshape(1, 3, 1, 1, 2).cuda(predictions.device)
+        box_preds = torch.cat([self.sigmoid(predictions[..., 1:3]), torch.exp(predictions[..., 3:5]) * anchors], dim=-1)
+        ious = compute_iou(box_preds[obj], target[..., 1:5][obj]).detach()
+        object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
+
+        # ======================== #
+        #   FOR BOX COORDINATES    #
+        # ======================== #
+
+        predictions[..., 1:3] = self.sigmoid(predictions[..., 1:3])  # x,y coordinates
+        target[..., 3:5] = torch.log(
+            (1e-16 + target[..., 3:5] / anchors)
+        )  # width, height coordinates
+        box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])
+
+        # ================== #
+        #   FOR CLASS LOSS   #
+        # ================== #
+
+        class_loss = self.entropy(
+            (predictions[..., 5:][obj]), (target[..., 5][obj].long()),
+        )
+
+        #print("__________________________________")
+        #print(self.lambda_box * box_loss)
+        #print(self.lambda_obj * object_loss)
+        #print(self.lambda_noobj * no_object_loss)
+        #print(self.lambda_class * class_loss)
+        #print("\n")
+
+        return (
+            self.lambda_box * box_loss
+            + self.lambda_obj * object_loss
+            + self.lambda_noobj * no_object_loss
+            + self.lambda_class * class_loss
+            )

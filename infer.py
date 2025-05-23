@@ -8,7 +8,7 @@ from PIL import Image
 import torchvision.transforms as T
 
 # Replace this with your actual model
-from script.model import DetectionModel
+from model import DetectionModel
 from script.utils import non_max_suppression
 import numpy as np
 
@@ -17,8 +17,8 @@ COCO_PATH = '/home/bibhabasum/projects/IIIT/data/coco/'
 IMG_DIR = os.path.join(COCO_PATH, 'val2017')
 ANN_FILE = os.path.join(COCO_PATH, 'annotations/instances_val2017.json')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-CONF_THRESH = 0.00001  # Lower to let NMS do filtering
-IOU_THRESH = 0.5
+CONF_THRESH = 0.0001  # Lower to let NMS do filtering
+IOU_THRESH = 0.65
 
 # Transform
 transform = T.Compose([
@@ -101,18 +101,6 @@ coco_eval.evaluate()
 coco_eval.accumulate()
 coco_eval.summarize()
 """
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.370
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.524
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.400
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.190
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.403
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.531
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.310
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.496
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.521
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.287
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.569
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.709
 
 DONE (t=5.10s). 00001, 0.65
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.372

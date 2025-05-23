@@ -101,7 +101,6 @@ class DetectionModel(nn.Module):
             ## head
             elif n==23 and isinstance(layer, Detect):
                 # print(x.shape, p19.shape, p16.shape)
-                img_dummy = torch.zeros(1, 3, 256, 256)
                 layer.stride = torch.tensor([ 8., 16., 32.])
                 out = layer([p16, p19, x])
                 out = layer.postprocess(out[0].permute(0, 2, 1))
