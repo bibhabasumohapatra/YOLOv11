@@ -17,8 +17,8 @@ COCO_PATH = '/home/bibhabasum/projects/IIIT/data/coco/'
 IMG_DIR = os.path.join(COCO_PATH, 'val2017')
 ANN_FILE = os.path.join(COCO_PATH, 'annotations/instances_val2017.json')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-CONF_THRESH = 0.01  # Lower to let NMS do filtering
-IOU_THRESH = 0.65
+CONF_THRESH = 0.00001  # Lower to let NMS do filtering
+IOU_THRESH = 0.5
 
 # Transform
 transform = T.Compose([
@@ -93,6 +93,7 @@ for img_id in tqdm(img_ids):
 with open('coco_results.json', 'w') as f:
     json.dump(results, f)
 
+print("Confidende threshold: ", CONF_THRESH, " IoU threshold: ", IOU_THRESH)
 # Evaluate
 coco_dt = coco.loadRes('coco_results.json')
 coco_eval = COCOeval(coco, coco_dt, iouType='bbox')
@@ -113,5 +114,17 @@ coco_eval.summarize()
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.569
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.709
 
-
+DONE (t=5.10s). 00001, 0.65
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.372
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.527
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.403
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.192
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.405
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.533
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.314
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.510
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.539
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.307
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.587
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.735
 """
